@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Package, UserCircle } from 'lucide-react';
+import { Star, Package, UserCircle, X, Shield, Mail, Phone, MapPin, Building2, Languages, BadgeCheck, Ban } from 'lucide-react';
 
 const StarRating = ({ value, onChange, readOnly = false, size = 20 }) => {
   const [hovered, setHovered] = useState(0);
@@ -102,36 +102,67 @@ export const ReviewModal = ({ order, onClose, onSubmit }) => {
 export const UserDetailsModal = ({ user, onClose }) => {
   if (!user) return null;
 
+  const detailRows = [
+    { label: 'Email', value: user.email, icon: <Mail size={16} /> },
+    { label: 'Role', value: user.role, icon: <Shield size={16} /> },
+    { label: 'Approved', value: user.isApproved ? 'Yes' : 'No', icon: <BadgeCheck size={16} /> },
+    { label: 'Suspended', value: user.isSuspended ? 'Yes' : 'No', icon: <Ban size={16} /> },
+    { label: 'Phone', value: user.phone || 'Not provided', icon: <Phone size={16} /> },
+    { label: 'Address', value: user.address || 'Not provided', icon: <MapPin size={16} /> },
+    { label: 'Company', value: user.companyName || 'Not provided', icon: <Building2 size={16} /> },
+    { label: 'Preferred Language', value: user.preferredLanguage || 'en', icon: <Languages size={16} /> }
+  ];
+
   return (
     <div className="modal-overlay">
-      <div className="modal" style={{ maxWidth: 520 }}>
-        <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 8 }}>User Details</h2>
-        <p className="modal-sub" style={{ fontSize: '.85rem', color: 'var(--slate-500)', marginBottom: 20 }}>
-          Governance view for <strong>{user.name}</strong>
-        </p>
+      <div className="modal user-details-modal">
+        <div className="user-details-header">
+          <div className="user-details-hero">
+            <div className="user-details-avatar">
+              <UserCircle size={34} />
+            </div>
+            <div className="user-details-heading">
+              <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: 4 }}>User Details</h2>
+              <p className="modal-sub" style={{ fontSize: '.85rem', color: 'var(--slate-500)', marginBottom: 0 }}>
+                Governance view for <strong>{user.name}</strong>
+              </p>
+            </div>
+          </div>
+          <button className="user-details-close" onClick={onClose} aria-label="Close user details">
+            <X size={18} />
+          </button>
+        </div>
 
-        <div style={{ display: 'grid', gap: 12 }}>
-          {[
-            ['Name', user.name],
-            ['Email', user.email],
-            ['Role', user.role],
-            ['Approved', user.isApproved ? 'Yes' : 'No'],
-            ['Suspended', user.isSuspended ? 'Yes' : 'No'],
-            ['Phone', user.phone || 'Not provided'],
-            ['Address', user.address || 'Not provided'],
-            ['Company', user.companyName || 'Not provided'],
-            ['Preferred Language', user.preferredLanguage || 'en']
-          ].map(([label, value]) => (
-            <div key={label} style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--slate-50)', border: '1px solid var(--slate-200)' }}>
-              <strong style={{ color: 'var(--slate-700)' }}>{label}</strong>
-              <span style={{ color: 'var(--slate-900)', wordBreak: 'break-word' }}>{value}</span>
+        <div className="user-details-topline">
+          <span className="user-details-pill">{user.role.toUpperCase()}</span>
+          <span className={`user-details-pill ${user.isApproved ? 'is-good' : 'is-muted'}`}>{user.isApproved ? 'Approved' : 'Pending Approval'}</span>
+          <span className={`user-details-pill ${user.isSuspended ? 'is-danger' : 'is-good'}`}>{user.isSuspended ? 'Suspended' : 'Active'}</span>
+        </div>
+
+        <div className="user-details-grid">
+          <div className="user-details-item feature">
+            <span className="user-details-item-icon"><UserCircle size={18} /></span>
+            <div>
+              <p className="user-details-label">Name</p>
+              <p className="user-details-value">{user.name}</p>
+            </div>
+          </div>
+          {detailRows.map((item) => (
+            <div key={item.label} className="user-details-item">
+              <span className="user-details-item-icon">{item.icon}</span>
+              <div>
+                <p className="user-details-label">{item.label}</p>
+                <p className="user-details-value">{item.value}</p>
+              </div>
             </div>
           ))}
         </div>
 
-        <button className="btn-secondary" style={{ width: '100%', marginTop: 18 }} onClick={onClose}>
-          Close
-        </button>
+        <div className="user-details-footer">
+          <button className="btn-secondary user-details-footer-btn" onClick={onClose}>
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
