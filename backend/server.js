@@ -9,20 +9,30 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+const normalizeOrigin = (origin) => origin?.replace(/\/$/, '');
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
   process.env.FRONTEND_URL
-].filter(Boolean);
+].filter(Boolean).map(normalizeOrigin);
+const allowedOriginPatterns = [
+  /^https:\/\/frontend-[a-z0-9-]+\.vercel\.app$/
+];
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const normalizedOrigin = normalizeOrigin(origin);
+    const isAllowed =
+      !normalizedOrigin ||
+      allowedOrigins.includes(normalizedOrigin) ||
+      allowedOriginPatterns.some((pattern) => pattern.test(normalizedOrigin));
+
+    if (isAllowed) {
       callback(null, true);
       return;
     }
 
-    callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -41,12 +51,18 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = normalizeOrigin(origin);
+      const isAllowed =
+        !normalizedOrigin ||
+        allowedOrigins.includes(normalizedOrigin) ||
+        allowedOriginPatterns.some((pattern) => pattern.test(normalizedOrigin));
+
+      if (isAllowed) {
         callback(null, true);
         return;
       }
 
-      callback(new Error(`Socket origin not allowed by CORS: ${origin}`));
+      callback(null, false);
     },
     methods: ['GET', 'POST'],
     credentials: true
